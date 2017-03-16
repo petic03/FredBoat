@@ -73,7 +73,7 @@ public class FindCommand extends Command {
         try {
             for (int i = 0; i < Math.ceil(toSearch / 100); i++) {
                 try {
-                    msgs.addAll(history.retrieveFuture(Math.min(100, toSearch - (i * 100))).block());
+                    msgs.addAll(history.retrieveFuture(Math.min(100, toSearch - (i * 100))).complete(true));
                 } catch (RateLimitedException e) {
                     throw new RuntimeException(e);
                 }

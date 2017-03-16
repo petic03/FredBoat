@@ -62,7 +62,7 @@ public class VolumeCommand extends Command implements IMusicCommand {
                     + "This is because of how it causes the bot to spend a lot more time processing audio, some tracks up to 5 times more, causing everyone to hear stutter. "
                     + "By disabling this feature FredBoat can play much more music without lag.\n"
                     + "I recommend setting the bot's volume via the dropdown menu https://fred.moe/1vD.png").queue(message1 -> RestActionScheduler.schedule(
-                            message1.deleteMessage(),
+                            message1.delete(),
                             2,
                             TimeUnit.MINUTES
                     ));

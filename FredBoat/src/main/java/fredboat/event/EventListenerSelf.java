@@ -71,7 +71,7 @@ public class EventListenerSelf extends AbstractScopedEventListener {
             CommandManager.prefixCalled(invoked, event.getGuild(), event.getTextChannel(), event.getMember(), event.getMessage());
 
             try {
-                event.getMessage().deleteMessage().queue();
+                event.getMessage().delete().queue();
             } catch (Exception ex) {
             }
 

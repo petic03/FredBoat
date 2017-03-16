@@ -94,7 +94,7 @@ public class PlayCommand extends Command implements IMusicCommand {
         player.setPause(false);
 
         try {
-            message.deleteMessage().queue();
+            message.delete().queue();
         } catch (Exception ignored) {
 
         }
@@ -141,7 +141,7 @@ public class PlayCommand extends Command implements IMusicCommand {
 
             VideoSelection oldSelection = player.selections.get(invoker.getUser().getId());
             if(oldSelection != null) {
-                oldSelection.getOutMsg().deleteMessage().queue();
+                oldSelection.getOutMsg().delete().queue();
             }
 
             MessageBuilder builder = new MessageBuilder();
