@@ -26,16 +26,15 @@
 package fredboat.command.fun;
 
 import fredboat.Config;
-import fredboat.FredBoat;
 import fredboat.commandmeta.abs.Command;
 import fredboat.commandmeta.abs.IFunCommand;
+import fredboat.util.ChatbotsAPI;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-//TODO fix JCA and reintroduce this command
 public class TalkCommand extends Command implements IFunCommand {
 
     @Override
@@ -47,13 +46,15 @@ public class TalkCommand extends Command implements IFunCommand {
 
     public static void talk(Member member, TextChannel channel, String question) {
         //Cleverbot integration
-        String response = FredBoat.jca.getResponse(question);
+//        String response = FredBoat.jca.getResponse(question);
+
+        String response = ChatbotsAPI.ask(question, member.getUser().getId());
         response = member.getEffectiveName() + ": " + StringEscapeUtils.unescapeHtml4(response);
         channel.sendMessage(response).queue();
     }
 
     @Override
     public String help(Guild guild) {
-        return "{0}{1} <text> OR @{2} <text>\n#Talk to the Cleverbot AI.";
+        return "{0}{1} <text> OR @{2} <text>\n#Talk to a chatbot.";
     }
 }

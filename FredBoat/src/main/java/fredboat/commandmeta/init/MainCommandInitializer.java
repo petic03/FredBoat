@@ -77,8 +77,8 @@ public class MainCommandInitializer {
         CommandRegistry.registerCommand("lenny", new TextCommand("( ͡° ͜ʖ ͡°)"));
         CommandRegistry.registerCommand("useless", new TextCommand("This command is useless."));
         CommandRegistry.registerCommand("clear", new ClearCommand());
-        //TODO JCA (=TalkCommand) is borken. Don't throw unnecessary error reports.
-//        CommandRegistry.registerCommand("talk", new TalkCommand());
+        CommandRegistry.registerCommand("talk", new TalkCommand());
+        CommandRegistry.registerAlias("talk", "chat");
         CommandRegistry.registerCommand("mal", new MALCommand());
         CommandRegistry.registerCommand("akinator", new AkinatorCommand());
         CommandRegistry.registerCommand("fuzzy", new FuzzyUserSearchCommand());
