@@ -88,8 +88,8 @@ public class ConfigCommand extends Command implements IModerationCommand {
             case "track_announce":
                 if (val.equalsIgnoreCase("true") | val.equalsIgnoreCase("false")) {
                     gc.setTrackAnnounce(Boolean.valueOf(val));
-                    TextUtils.replyWithName(channel, invoker, "`track_announce` " + MessageFormat.format(I18n.get(guild).getString("configSetTo"), val));
                     EntityWriter.mergeGuildConfig(gc);
+                    TextUtils.replyWithName(channel, invoker, "`track_announce` " + MessageFormat.format(I18n.get(guild).getString("configSetTo"), val));
                 } else {
                     channel.sendMessage(MessageFormat.format(I18n.get(guild).getString("configMustBeBoolean"), invoker.getEffectiveName())).queue();
                 }
@@ -97,8 +97,8 @@ public class ConfigCommand extends Command implements IModerationCommand {
             case "auto_resume":
                 if (val.equalsIgnoreCase("true") | val.equalsIgnoreCase("false")) {
                     gc.setAutoResume(Boolean.valueOf(val));
-                    TextUtils.replyWithName(channel, invoker, "`auto_resume` " + MessageFormat.format(I18n.get(guild).getString("configSetTo"), val));
                     EntityWriter.mergeGuildConfig(gc);
+                    TextUtils.replyWithName(channel, invoker, "`auto_resume` " + MessageFormat.format(I18n.get(guild).getString("configSetTo"), val));
                 } else {
                     channel.sendMessage(MessageFormat.format(I18n.get(guild).getString("configMustBeBoolean"), invoker.getEffectiveName())).queue();
                 }

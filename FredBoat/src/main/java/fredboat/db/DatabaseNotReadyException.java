@@ -29,11 +29,21 @@ import fredboat.commandmeta.MessagingException;
 
 public class DatabaseNotReadyException extends MessagingException {
 
+    private static final String DEFAULT_MESSAGE = "The database is not available currently. Please try again in a moment.";
+
+    DatabaseNotReadyException(String str, Throwable cause) {
+        super(str, cause);
+    }
+
     DatabaseNotReadyException(String str) {
         super(str);
     }
 
+    DatabaseNotReadyException(Throwable cause) {
+        super(DEFAULT_MESSAGE, cause);
+    }
+
     DatabaseNotReadyException() {
-        super("The database isn't ready yet. The bot might have just started. Please try again in a moment.");
+        super(DEFAULT_MESSAGE);
     }
 }

@@ -53,7 +53,7 @@ public class EntityReader {
     private static <E extends IEntity> E getEntity(String id, Class<E> clazz) throws DatabaseNotReadyException {
         DatabaseManager dbManager = FredBoat.getDbManager();
         if (!dbManager.isAvailable()) {
-            throw new DatabaseNotReadyException("The database is not available currently. Please try again later.");
+            throw new DatabaseNotReadyException();
         }
 
         EntityManager em = dbManager.getEntityManager();
@@ -62,6 +62,7 @@ public class EntityReader {
             config = em.find(clazz, id);
         } catch (PersistenceException e) {
             log.error("Error while trying to find entity of class {} from DB for id {}", clazz.getName(), id, e);
+            throw new DatabaseNotReadyException(e);
         } finally {
             em.close();
         }
@@ -76,7 +77,7 @@ public class EntityReader {
             entity.setId(id);
             return entity;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Could not create an object of class " + clazz.getName(), e);
+            throw new RuntimeException("Could not create an entity of class " + clazz.getName(), e);
         }
     }
 

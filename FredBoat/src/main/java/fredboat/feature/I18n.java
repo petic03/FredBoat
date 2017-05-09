@@ -89,8 +89,7 @@ public class I18n {
         try {
             config = EntityReader.getGuildConfig(guild.getId());
         } catch (DatabaseNotReadyException e) {
-            //don't log spam the full exceptions
-            log.warn("Database not ready, returning default props");
+            //don't log spam the full exceptions or logs
             return DEFAULT;
         } catch (Exception e) {
             log.error("Error when reading entity", e);
