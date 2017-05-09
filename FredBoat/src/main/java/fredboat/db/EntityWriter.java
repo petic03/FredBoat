@@ -50,7 +50,7 @@ public class EntityWriter {
     private static void merge(IEntity entity) {
         DatabaseManager dbManager = FredBoat.getDbManager();
         if (!dbManager.isAvailable()) {
-            throw new DatabaseNotReadyException("The database is not available currently. Please try again later.");
+            throw new DatabaseNotReadyException();
         }
 
         EntityManager em = dbManager.getEntityManager();
@@ -59,7 +59,8 @@ public class EntityWriter {
             em.merge(entity);
             em.getTransaction().commit();
         } catch (JDBCConnectionException e) {
-            log.error("Failed to merge entity", e);
+            log.error("Failed to merge entity {}", entity, e);
+            throw new DatabaseNotReadyException(e);
         } finally {
             em.close();
         }

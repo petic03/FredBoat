@@ -28,6 +28,7 @@ package fredboat.db;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import fredboat.Config;
+import fredboat.FredBoat;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class DatabaseManager {
 
     private EntityManagerFactory emf;
     private Session sshTunnel;
-    public DatabaseState state = DatabaseState.UNINITIALIZED;
+    private DatabaseState state = DatabaseState.UNINITIALIZED;
 
     //local port, if using SSH tunnel point your jdbc to this, e.g. jdbc:postgresql://localhost:9333/...
     private static final int SSH_TUNNEL_PORT = 9333;
@@ -104,6 +105,11 @@ public class DatabaseManager {
 
             //how long to wait for a connection becoming available, also the timeout when a DB fails
             properties.put("hibernate.hikari.connectionTimeout", Integer.toString(Config.HIKARI_TIMEOUT_MILLISECONDS));
+            //this helps with sorting out connections in pgAdmin
+            properties.put("hibernate.hikari.dataSource.ApplicationName", "FredBoat_" + Config.CONFIG.getDistribution());
+
+            //timeout the validation query (will be done automatically through Connection.isValid())
+            properties.put("hibernate.hikari.validationTimeout", "1000");
 
 
             LocalContainerEntityManagerFactoryBean emfb = new LocalContainerEntityManagerFactoryBean();
@@ -127,7 +133,29 @@ public class DatabaseManager {
         }
     }
 
-    private void connectSSH() {
+    public void reconnectSSH() {
+        connectSSH();
+        //try a test query and if successful set state to ready
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.createNativeQuery("SELECT 1;").getResultList();
+            em.getTransaction().commit();
+            state = DatabaseState.READY;
+        } finally {
+            em.close();
+        }
+    }
+
+    private synchronized void connectSSH() {
+        if (!Config.CONFIG.isUseSshTunnel()) {
+            log.warn("Cannot connect ssh tunnel as it is not specified in the config");
+            return;
+        }
+        if (sshTunnel != null && sshTunnel.isConnected()) {
+            log.info("Tunnel is already connected, disconnect first before reconnecting");
+            return;
+        }
         try {
             //establish the tunnel
             log.info("Starting SSH tunnel");
@@ -148,7 +176,7 @@ public class DatabaseManager {
             config.put("StrictHostKeyChecking", "no");
             config.put("ConnectionAttempts", "3");
             session.setConfig(config);
-            session.setServerAliveInterval(1000);//milliseconds
+            session.setServerAliveInterval(500);//milliseconds
             session.connect();
 
             log.info("SSH Connected");
@@ -189,31 +217,12 @@ public class DatabaseManager {
 
         //is the ssh connection still alive?
         if (sshTunnel != null && !sshTunnel.isConnected()) {
-            //not gud
             log.error("SSH tunnel lost connection.");
             state = DatabaseState.FAILED;
-            closeEntityManagerFactory();
+            //immediately try to reconnect the tunnel
+            //DBConnectionWatchdogAgent should take further care of this
+            FredBoat.executor.submit(this::reconnectSSH);
             return false;
-        }
-
-        //is the db itself alive?
-        EntityManager em = getEntityManager();
-        try {
-            //do a validation SQL query, this one should work with both postgres and SQLite
-            em.getTransaction().begin();
-            em.createNativeQuery("SELECT 1;").getResultList();
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            // this would probably also be triggered if we have a db connection leak and we can't acquire a
-            // connection from the pool while the db is still alive itself
-            log.error("Test query on database failed.", e);
-            state = DatabaseState.FAILED;
-            em.close();
-            closeEntityManagerFactory();
-            return false;
-        } finally {
-            //close the em if it hasn't been closed by the catch already
-            if (em.isOpen()) em.close();
         }
 
         return state == DatabaseState.READY;
@@ -230,6 +239,10 @@ public class DatabaseManager {
                 //it has already been closed, nothing to catch here
             }
         }
+    }
+
+    public DatabaseState getState() {
+        return state;
     }
 
     public enum DatabaseState {

@@ -40,9 +40,9 @@ public class DBConnectionWatchdogAgent extends Thread {
                 dbManager.isAvailable();
 
                 //only recover the database from a failed state
-                if (dbManager.state == DatabaseManager.DatabaseState.FAILED) {
+                if (dbManager.getState() == DatabaseManager.DatabaseState.FAILED) {
                     log.info("Attempting to recover failed database connection");
-                    dbManager.startup();
+                    dbManager.reconnectSSH();
                 }
             } catch (Exception e) {
                 log.error("Caught an exception while trying to recover database connection!", e);
